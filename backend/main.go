@@ -3,12 +3,18 @@ package main
 import (
 	structures "backend/Structures"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
 var cars *mongo.Collection
@@ -31,18 +37,13 @@ func init() {
 	cars = client.Database("practica1").Collection("Autos")
 }
 
-func hola(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("hola mundo")
-}
-
 func Create(w http.ResponseWriter, r *http.Request) {
-	newCar := structures.Car{
-		Placa:  "p304kjy",
-		Marca:  "Mazda",
-		Modelo: 2015,
-		Serie:  "3",
-		Color:  "rojo",
-	}
+
+	body, _ := ioutil.ReadAll(r.Body)
+
+	newCar := structures.Car{}
+
+	json.Unmarshal(body, &newCar)
 
 	res, err := cars.InsertOne(ctx, newCar)
 
@@ -53,8 +54,39 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Auto insertado: ", res)
 }
 
-func Read(w http.ResponseWriter, r *http.Request) {
-	log.Println("Lectura de datos")
+func ReadAll(w http.ResponseWriter, r *http.Request) {
+	findOpts := options.Find()
+
+	var results []structures.Car
+	response := ""
+
+	cur, err := cars.Find(context.TODO(), bson.D{{}}, findOpts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for cur.Next(context.TODO()) {
+		var s structures.Car
+		err := cur.Decode(&s)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		results = append(results, s)
+
+		j, _ := json.MarshalIndent(results[len(results)-1], "", "\t")
+		response = response + string(j) + ","
+	}
+
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	cur.Close(context.TODO())
+
+	response = "[" + response[:len(response)-1] + "]"
+
+	fmt.Fprintln(w, response)
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
@@ -65,14 +97,32 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	log.Println("Eliminando dato")
 }
 
+type api struct {
+	router http.Handler
+}
+
+type Server interface {
+	Router() http.Handler
+}
+
+func New() Server {
+	a := &api{}
+
+	r := mux.NewRouter().StrictSlash(true)
+
+	r.HandleFunc("/create", Create).Methods("POST")
+	r.HandleFunc("/readall", ReadAll).Methods("GET")
+	log.Fatal(http.ListenAndServe(":3030", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
+
+	a.router = r
+	return a
+}
+
+func (a *api) Router() http.Handler {
+	return a.router
+}
+
 func main() {
-	fmt.Println("Hola mundo")
-
-	http.HandleFunc("/create", Create)
-	http.HandleFunc("/read", Read)
-	http.HandleFunc("/update", Update)
-	http.HandleFunc("/delete", Delete)
-
-	log.Println("=== backend listo")
-	http.ListenAndServe(":3030", nil)
+	s := New()
+	log.Fatal(http.ListenAndServe(":3000", s.Router()))
 }
