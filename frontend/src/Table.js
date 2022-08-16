@@ -31,10 +31,12 @@ class Table extends React.Component{
 
         this.state = {
             cars: [],
-            filter: 0
+            filter: 0,
+            filterValue: ""
         };
         
         this.handleFilterChange = this.handleFilterChange.bind(this);
+        this.handleFilterValue = this.handleFilterValue.bind(this);
         this.ReadAll = this.ReadAll.bind(this);
         this.Read = this.Read.bind(this);
     }
@@ -48,10 +50,17 @@ class Table extends React.Component{
         });
     }
 
-    Read(){
+    async Read(){
         if(this.state.filter === 0){
             this.ReadAll();
+            return;
         }
+
+        const response = await fetch('http://localhost:3030/filter/'+this.state.filter+"/"+this.state.filterValue)
+        const data = await response.json();
+        this.setState({
+            cars:data
+        });
     }
 
     handleFilterChange(event){
@@ -60,6 +69,17 @@ class Table extends React.Component{
         this.setState(
             {
                 [name]:parseInt(value)
+            }
+        );
+    }
+
+    handleFilterValue(event){
+        const name = event.target.name;
+        const value = event.target.value;
+
+        this.setState(
+            {
+                [name]:value
             }
         );
     }
@@ -73,7 +93,7 @@ class Table extends React.Component{
                 <div className='main-row'>
                     <form name="read">
                     <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                        <li className="createElement">Filtrar : <input type="text" name='value' className="new"/></li>
+                        <li className="createElement">Filtrar : <input type="text" name='filterValue' className="new" onChange={this.handleFilterValue}/></li>
                         <li className="createElement">por : <select name='filter' className="new" value={this.filter} onChange={this.handleFilterChange}>
                                 <option value="0">Ninguno</option>
                                 <option value="1">Marca</option>
