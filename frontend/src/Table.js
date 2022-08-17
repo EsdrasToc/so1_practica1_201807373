@@ -1,5 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.css'
 import React from 'react'
+import './Table.css'
 
 
 class Row extends React.Component{
@@ -9,17 +10,55 @@ class Row extends React.Component{
         this.state = {
             car : props.car
         };
+
+        this.Delete = this.Delete.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.update = this.update.bind(this);
     }
+
+    Delete(){
+        fetch('http://localhost:3030/delete',{
+            method: 'POST', 
+            mode: 'cors', 
+            body: JSON.stringify(this.state.car)
+        })
+    }
+
+    handleChange(event){
+        const name = event.target.name;
+        const value = event.target.value;
+
+        let car = this.state.car;
+
+        if(name === "modelo"){
+            car[name] = parseInt(value)
+        }else{
+            car[name] = value;
+        }
+
+        this.setState({
+            car: car
+        });
+    }
+
+    update(){
+        fetch('http://localhost:3030/update',{
+            method: 'POST', 
+            mode: 'cors', 
+            body: JSON.stringify(this.state.car)
+        })
+    }
+
     render(){
         return(
             <tr>
                 <td>{this.state.car.placa}</td>
-                <td>{this.state.car.marca}</td>
-                <td>{this.state.car.modelo}</td>
-                <td>{this.state.car.serie}</td>
-                <td>{this.state.car.color}</td>
-                <td><button type="button" className="btn btn-warning">Delete</button></td>
-                <td><button type="button" className="btn btn-primary">Update</button></td>
+                <td><input className="datos" type="text" name="marca" value={this.state.car.marca} onChange={this.handleChange}/></td>
+                <td><input className="datos" type="number" name="modelo" value={this.state.car.modelo} onChange={this.handleChange}/></td>
+                <td><input className="datos" type="text" name="serie" value={this.state.car.serie} onChange={this.handleChange}/></td>
+                <td><input className="datos" type="text" name="color" value={this.state.car.color} onChange={this.handleChange}/></td>
+                <td><button type="button" className="btn btn-danger" onClick={this.Delete}>Delete</button></td>
+                <td><button type="button" className="btn btn-primary" onClick={this.update}>Update</button></td>
             </tr>
         );
     }
