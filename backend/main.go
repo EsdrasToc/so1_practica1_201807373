@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var cars *mongo.Collection
+var cars, logs *mongo.Collection
 var ctx = context.TODO()
 
 func init() {
@@ -36,9 +36,12 @@ func init() {
 	log.Println("Conectado correctamente a mongo")
 
 	cars = client.Database("practica1").Collection("Autos")
+	logs = client.Database("practica1").Collection("Logs")
 }
 
 func Create(w http.ResponseWriter, r *http.Request) {
+
+	logs.InsertOne(ctx, structures.NewLog("Create"))
 
 	body, _ := ioutil.ReadAll(r.Body)
 
@@ -56,7 +59,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReadWithFilter(w http.ResponseWriter, r *http.Request) {
-
+	logs.InsertOne(ctx, structures.NewLog("Read"))
 	search, _ := mux.Vars(r)["find"]
 	val, _ := strconv.Atoi(mux.Vars(r)["val"])
 
@@ -106,6 +109,7 @@ func ReadWithFilter(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReadAll(w http.ResponseWriter, r *http.Request) {
+	logs.InsertOne(ctx, structures.NewLog("Read"))
 	findOpts := options.Find()
 
 	var results []structures.Car
@@ -141,11 +145,46 @@ func ReadAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
-	log.Println("lectura de objetos")
+	logs.InsertOne(ctx, structures.NewLog("Update"))
+	body, _ := ioutil.ReadAll(r.Body)
+
+	newCar := structures.Car{}
+
+	json.Unmarshal(body, &newCar)
+
+	filter := bson.D{{"placa", newCar.Placa}}
+
+	updateResult, err := cars.UpdateOne(context.TODO(), filter, bson.D{
+		{"$set", bson.D{
+			{"marca", newCar.Marca},
+			{"modelo", newCar.Modelo},
+			{"serie", newCar.Serie},
+			{"color", newCar.Color},
+		}},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
-	log.Println("Eliminando dato")
+	logs.InsertOne(ctx, structures.NewLog("Delete"))
+	body, _ := ioutil.ReadAll(r.Body)
+
+	newCar := structures.Car{}
+
+	json.Unmarshal(body, &newCar)
+
+	filter := bson.D{{"placa", newCar.Placa}}
+
+	deleteResult, err := cars.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Vehiculo removido: ", deleteResult.DeletedCount)
 }
 
 type api struct {
@@ -164,6 +203,8 @@ func New() Server {
 	r.HandleFunc("/create", Create).Methods("POST")
 	r.HandleFunc("/readall", ReadAll).Methods("GET")
 	r.HandleFunc("/filter/{val:[1-3]}/{find:.+}", ReadWithFilter).Methods("GET")
+	r.HandleFunc("/delete", Delete).Methods("POST")
+	r.HandleFunc("/update", Update).Methods("POST")
 	log.Fatal(http.ListenAndServe(":3030", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 
 	a.router = r
