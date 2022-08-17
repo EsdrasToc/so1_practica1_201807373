@@ -71,12 +71,12 @@ func ReadWithFilter(w http.ResponseWriter, r *http.Request) {
 	filter := bson.D{{}}
 
 	if val == 1 {
-		filter = bson.D{{"marca", search}}
+		filter = bson.D{{Key: "marca", Value: search}}
 	} else if val == 2 {
 		v, _ := strconv.Atoi(search)
-		filter = bson.D{{"modelo", v}}
+		filter = bson.D{{Key: "modelo", Value: v}}
 	} else {
-		filter = bson.D{{"color", search}}
+		filter = bson.D{{Key: "color", Value: search}}
 	}
 
 	cur, err := cars.Find(context.TODO(), filter, findOpts)
@@ -152,14 +152,14 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 	json.Unmarshal(body, &newCar)
 
-	filter := bson.D{{"placa", newCar.Placa}}
+	filter := bson.D{{Key: "placa", Value: newCar.Placa}}
 
 	updateResult, err := cars.UpdateOne(context.TODO(), filter, bson.D{
-		{"$set", bson.D{
-			{"marca", newCar.Marca},
-			{"modelo", newCar.Modelo},
-			{"serie", newCar.Serie},
-			{"color", newCar.Color},
+		{Key: "$set", Value: bson.D{
+			{Key: "marca", Value: newCar.Marca},
+			{Key: "modelo", Value: newCar.Modelo},
+			{Key: "serie", Value: newCar.Serie},
+			{Key: "color", Value: newCar.Color},
 		}},
 	})
 	if err != nil {
@@ -177,7 +177,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 
 	json.Unmarshal(body, &newCar)
 
-	filter := bson.D{{"placa", newCar.Placa}}
+	filter := bson.D{{Key: "placa", Value: newCar.Placa}}
 
 	deleteResult, err := cars.DeleteOne(context.TODO(), filter)
 	if err != nil {
