@@ -22,7 +22,8 @@ var cars, logs *mongo.Collection
 var ctx = context.TODO()
 
 func init() {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017/")
+	clientOptions := options.Client().ApplyURI("mongodb://database:27017/")
+	//clientOptions := options.Client().ApplyURI("mongodb://database_host:27017/")
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -141,6 +142,7 @@ func ReadAll(w http.ResponseWriter, r *http.Request) {
 
 	response = "[" + response[:len(response)-1] + "]"
 
+	log.Println(response)
 	fmt.Fprintln(w, response)
 }
 
@@ -195,6 +197,11 @@ type Server interface {
 	Router() http.Handler
 }
 
+func HolaMundo(w http.ResponseWriter, r *http.Request) {
+	log.Println("hola mundo xD ----------------------")
+	fmt.Fprintln(w, "hola mundo desde go")
+}
+
 func New() Server {
 	a := &api{}
 
@@ -205,6 +212,7 @@ func New() Server {
 	r.HandleFunc("/filter/{val:[1-3]}/{find:.+}", ReadWithFilter).Methods("GET")
 	r.HandleFunc("/delete", Delete).Methods("POST")
 	r.HandleFunc("/update", Update).Methods("POST")
+	r.HandleFunc("/hola", HolaMundo).Methods("POST")
 	log.Fatal(http.ListenAndServe(":3030", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 
 	a.router = r

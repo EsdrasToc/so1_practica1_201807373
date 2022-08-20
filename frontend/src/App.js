@@ -6,6 +6,7 @@ import Table from './Table'
 class App extends React.Component{
 
     constructor(props){
+
         super(props)
         
         this.state = {
@@ -17,6 +18,14 @@ class App extends React.Component{
             filter: 0,
             cars: []
         };
+
+        this.path = "http://localhost:3030"
+
+        fetch(this.path+'/hola',{
+            method: 'POST', 
+            mode: 'cors', 
+            body: JSON.stringify({})
+        })
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.Create = this.Create.bind(this);
@@ -35,7 +44,7 @@ class App extends React.Component{
                 color:this.state.color,
             }
 
-            fetch('http://localhost:3030/create',{
+            fetch(this.path+'/create',{
                 method: 'POST', 
                 mode: 'cors', 
                 body: JSON.stringify(newCar)

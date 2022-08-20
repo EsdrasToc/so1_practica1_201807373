@@ -1,0 +1,56 @@
+version : "3"
+
+services:
+  database:
+    container_name: database
+    restart: always
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data:/data/db
+    networks:
+      - app_network
+        #aliases:
+         # - database_host
+  frontend:
+    container_name: frontend
+    restart: always
+    build: ./frontend
+    image: esdrastochi/frontend_p1_201807373
+    stdin_open: true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    links:
+      - backend
+    networks:
+      - app_network
+        #aliases:
+         # - frontend_host
+  backend:
+    container_name: backend
+    restart: always
+    build: ./backend
+    image: esdrastochi/backend_p1_201807373
+    ports:
+      - "3030:3030"
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - app_network
+        #aliases:
+         # - backend_host
+
+networks:
+  app_network:
+    name: "app_network"
+    driver: bridge
+    #ipam:
+    #  driver: default
+
+volumes:
+  mongodata:
