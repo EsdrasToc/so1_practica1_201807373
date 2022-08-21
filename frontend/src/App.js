@@ -19,7 +19,7 @@ class App extends React.Component{
             cars: []
         };
 
-        this.path = "http://localhost:3030"
+        this.path = "http://192.168.122.16:3030"
 
         fetch(this.path+'/hola',{
             method: 'POST', 

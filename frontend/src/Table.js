@@ -17,7 +17,7 @@ class Row extends React.Component{
     }
 
     Delete(){
-        fetch('http://localhost:3030/delete',{
+        fetch('http://192.168.122.16:3030/delete',{
             method: 'POST', 
             mode: 'cors', 
             body: JSON.stringify(this.state.car)
@@ -42,7 +42,7 @@ class Row extends React.Component{
     }
 
     update(){
-        fetch('http://localhost:3030/update',{
+        fetch('http://192.168.122.16:3030/update',{
             method: 'POST', 
             mode: 'cors', 
             body: JSON.stringify(this.state.car)
@@ -81,7 +81,7 @@ class Table extends React.Component{
     }
 
     async ReadAll(){
-        const response = await fetch('http://localhost:3030/readall');
+        const response = await fetch('http://192.168.122.16:3030/readall');
         const data = await response.json();
         
         this.setState({
@@ -95,7 +95,7 @@ class Table extends React.Component{
             return;
         }
 
-        const response = await fetch('http://localhost:3030/filter/'+this.state.filter+"/"+this.state.filterValue)
+        const response = await fetch('http://192.168.122.16:3030/filter/'+this.state.filter+"/"+this.state.filterValue)
         const data = await response.json();
         this.setState({
             cars:data
