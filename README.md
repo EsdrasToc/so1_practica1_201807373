@@ -1,29 +1,29 @@
-#Practica 1
+# Practica 1
 - Esdras Rodolfo Toc Hi
 - 201807373
 
 
-##Frontend
+## Frontend
 
 Para realizar el frontend de la aplicacion se utilizo el framework React y para el estilo del mismo se utilizo bootstrap.
 
--**Version de node:** 16.16.0
--**Version de npm:** 8.17.0
+- **Version de node:** 16.16.0
+- **Version de npm:** 8.17.0
 
-##Backend
+## Backend
 
 Para el desarrollo del backend se utilizo el lenguaje Go, adicional a esto utilizamos el paquete gorilla/mux con la finalidad de levantar una rest API que servira como intermediario entre el frontend y la base de datos.
 
--**Version de Go:** 1.13.8
--**Paquete gorilla/mux:** https://github.com/gorilla/mux
+- **Version de Go:** 1.13.8
+- **Paquete gorilla/mux:** https://github.com/gorilla/mux
 
-##Base de datos
+## Base de datos
 
 Al ser datos bastante simples de almacenar, se tomo la decision de utilizar un lenguage NoSQL, para ser mas exactos, utilizamos MongoDB.
 
 Al momento de levantar los contenedores del programa, se creara una carpeta extra al lado de nuestras carpetas del frontend y backend llamada Data, es muy importante NO eliminar esta carpeta ya que en la misma se guardaran todas los datos almacendos por MongoDB.
 
-##Instalacion
+## Instalacion
 
 1. Instalar docker
 	**Version de docker:** 20.10.12
